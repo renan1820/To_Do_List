@@ -1,4 +1,4 @@
-package com.renan.portifolio.to_dolist.ui.theme
+package com.renan.portifolio.to_dolist.view.ui.theme
 
 import android.app.Activity
 import android.os.Build

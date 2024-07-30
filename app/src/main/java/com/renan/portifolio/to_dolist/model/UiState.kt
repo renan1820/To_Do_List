@@ -1,4 +1,4 @@
-package com.renan.portifolio.to_dolist
+package com.renan.portifolio.to_dolist.model
 
 /**
  * A sealed hierarchy describing the state of the text generation.

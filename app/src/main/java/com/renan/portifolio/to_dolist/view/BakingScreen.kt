@@ -1,4 +1,4 @@
-package com.renan.portifolio.to_dolist
+package com.renan.portifolio.to_dolist.view
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.BorderStroke
@@ -36,6 +36,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.renan.portifolio.to_dolist.R
+import com.renan.portifolio.to_dolist.model.UiState
+import com.renan.portifolio.to_dolist.viewmodel.BakingViewModel
 
 val images = arrayOf(
     // Image generated using Gemini from the prompt "cupcake image"
