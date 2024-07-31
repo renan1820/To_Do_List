@@ -17,8 +17,6 @@ val appModule = module {
     }
 
     single { get<Retrofit>().create(AuthApi::class.java) }
-
-    single { AuthRepository(get()) }
-
+    
     viewModel{ LoginViewModel(get()) }
 }

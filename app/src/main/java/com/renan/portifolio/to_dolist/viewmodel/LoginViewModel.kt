@@ -1,5 +1,6 @@
 package com.renan.portifolio.to_dolist.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,17 +8,21 @@ import com.renan.portifolio.to_dolist.model.LoginResponse
 import com.renan.portifolio.to_dolist.repository.AuthRepository
 import kotlinx.coroutines.launch
 
-class LoginViewModel(private val repository: AuthRepository) : ViewModel() {
-    val loginResponse = MutableLiveData<LoginResponse>()
-    val error = MutableLiveData<String>()
+open class LoginViewModel(private val repository: AuthRepository) : ViewModel() {
 
-    fun login(email: String, password: String){
+    private val _loginResponse = MutableLiveData<LoginResponse>()
+    open val loginResponse: LiveData<LoginResponse> = _loginResponse
+
+    private val _error = MutableLiveData<String>()
+    open val error: LiveData<String> = _error
+
+    open fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
                 val response = repository.login(email, password)
-                loginResponse.value = response
+                _loginResponse.value = response
             } catch (e: Exception) {
-                error.value = e.message
+                _error.value = e.message
             }
         }
     }
