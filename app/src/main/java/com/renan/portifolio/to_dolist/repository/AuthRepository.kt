@@ -4,5 +4,5 @@ import com.renan.portifolio.to_dolist.model.LoginResponse
 import com.renan.portifolio.to_dolist.network.AuthApi
 
 interface AuthRepository {
-    suspend fun login(email: String, password: String): LoginResponse
+    abstract suspend fun login(email: String, password: String): LoginResponse
 }

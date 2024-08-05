@@ -1,4 +1,4 @@
-package com.renan.portifolio.to_dolist.view.ui.theme
+package com.renan.portifolio.to_dolist.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

@@ -1,6 +1,5 @@
-package com.renan.portifolio.to_dolist.view.ui.theme
+package com.renan.portifolio.to_dolist.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

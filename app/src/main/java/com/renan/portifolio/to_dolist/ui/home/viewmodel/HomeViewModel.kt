@@ -1,4 +1,4 @@
-package com.renan.portifolio.to_dolist.viewmodel
+package com.renan.portifolio.to_dolist.ui.home.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -8,7 +8,7 @@ import com.renan.portifolio.to_dolist.model.LoginResponse
 import com.renan.portifolio.to_dolist.repository.AuthRepository
 import kotlinx.coroutines.launch
 
-open class LoginViewModel(private val repository: AuthRepository) : ViewModel() {
+class HomeViewModel(private val repository: AuthRepository) : ViewModel() {
 
     private val _loginResponse = MutableLiveData<LoginResponse>()
     open val loginResponse: LiveData<LoginResponse> = _loginResponse
