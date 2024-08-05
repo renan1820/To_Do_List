@@ -50,9 +50,13 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel = k
             visualTransformation = PasswordVisualTransformation()
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { loginViewModel.login(email.value, password.value) }) {
+        Button(
+            onClick = {
+                loginViewModel.login(email.value, password.value)
+                navController.navigate("home")
+            }
+        ) {
             Text("Login")
-            navController.navigate("home")
         }
 
         loginResponse?.let {
