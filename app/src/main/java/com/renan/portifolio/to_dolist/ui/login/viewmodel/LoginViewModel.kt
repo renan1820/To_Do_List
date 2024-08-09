@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.common.api.ApiException
 import com.renan.portifolio.to_dolist.model.LoginResponse
 import com.renan.portifolio.to_dolist.repository.AuthRepository
 import kotlinx.coroutines.launch

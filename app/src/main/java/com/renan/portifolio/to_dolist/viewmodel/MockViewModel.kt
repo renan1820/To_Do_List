@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.renan.portifolio.to_dolist.model.LoginResponse
 import com.renan.portifolio.to_dolist.model.User
 import com.renan.portifolio.to_dolist.repository.FakeAuthRepository
+import com.renan.portifolio.to_dolist.ui.home.viewmodel.HomeViewModel
 import com.renan.portifolio.to_dolist.ui.login.viewmodel.LoginViewModel
 
 class MockViewModel : LoginViewModel(FakeAuthRepository()) {
@@ -15,4 +16,5 @@ class MockViewModel : LoginViewModel(FakeAuthRepository()) {
         )
     )
     override val error: LiveData<String> = MutableLiveData("Mock error message")
+
 }

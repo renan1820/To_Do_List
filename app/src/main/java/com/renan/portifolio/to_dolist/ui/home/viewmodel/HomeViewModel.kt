@@ -4,23 +4,24 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.renan.portifolio.to_dolist.model.LoginResponse
+import com.renan.portifolio.to_dolist.model.HomeResponse
 import com.renan.portifolio.to_dolist.repository.AuthRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class HomeViewModel(private val repository: AuthRepository) : ViewModel() {
+open class HomeViewModel(private val repository: AuthRepository) : ViewModel() {
 
-    private val _loginResponse = MutableLiveData<LoginResponse>()
-    open val loginResponse: LiveData<LoginResponse> = _loginResponse
+    private val _homeResponse = MutableLiveData<HomeResponse>()
+    open val homeResponse: LiveData<HomeResponse> = _homeResponse
 
     private val _error = MutableLiveData<String>()
     open val error: LiveData<String> = _error
 
-    open fun login(email: String, password: String) {
-        viewModelScope.launch {
+    open fun home(email: String, password: String) {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val response = repository.login(email, password)
-                _loginResponse.value = response
+                val response = repository.home(email, password)
+                _homeResponse.value = response
             } catch (e: Exception) {
                 _error.value = e.message
             }

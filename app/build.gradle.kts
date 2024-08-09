@@ -77,6 +77,9 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.google.generativeai)
     implementation(libs.androidx.multidex)
+    implementation(libs.google.services)
+    implementation(libs.google.accompanist)
+    implementation(libs.lottie.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -8,4 +8,9 @@
     <string name="image2_description">Cookies</string>
     <string name="image3_description">Cake</string>
     <string name="results_placeholder">(Results will appear here)</string>
+    <string name="textfield_desc">Text input</string>
+    <string name="text_hint">Text Hint</string>
+    <string name="not_available">Functionality currently not available</string>
+    <string name="not_available_subtitle">Grab a beverage and check back later!</string>
+
 </resources>
