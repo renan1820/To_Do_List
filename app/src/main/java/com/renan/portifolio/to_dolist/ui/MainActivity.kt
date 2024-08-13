@@ -5,6 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.compose.rememberNavController
 import com.renan.portifolio.to_dolist.ui.theme.ToDoListTheme
 import com.renan.portifolio.to_dolist.ui.login.viewmodel.LoginViewModel
@@ -17,6 +18,7 @@ class MainActivity : ComponentActivity() {
     private val viewModel: LoginViewModel by viewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         setContent {
             enableEdgeToEdge(

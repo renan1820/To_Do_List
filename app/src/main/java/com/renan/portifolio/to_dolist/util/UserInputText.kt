@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFrom
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LocalContentColor
@@ -33,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.focus.FocusRequester
@@ -53,7 +55,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.renan.portifolio.to_dolist.R
@@ -81,7 +85,8 @@ fun UserInputText(
     onTextFieldFocused: (Boolean) -> Unit,
     focusState: Boolean,
     hintText: String? = null,
-    imeAction: ImeAction? = ImeAction.Done
+    imeAction: ImeAction? = ImeAction.Done,
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     val a11ylabel = stringResource(id = R.string.textfield_desc)
     Row(
@@ -94,25 +99,21 @@ fun UserInputText(
             },
         horizontalArrangement = Arrangement.End
     ) {
-        Surface(
-            color = Color.White
-        ) {
+        Surface {
             Box(
                 modifier = Modifier
                     .height(64.dp)
                     .align(Alignment.Bottom)
                     .padding(4.dp)
-                    .drawBehind {
-                        drawRoundRect(
-                            Color(0xFFF1F1F1),
-                            cornerRadius = CornerRadius(16.dp.toPx())
-                        )
-                    }
-            ) {
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White, shape = RoundedCornerShape(16.dp)),
+
+                ) {
                 var lastFocusState by remember { mutableStateOf(false) }
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = { onTextChanged(it) },
+                    visualTransformation = visualTransformation,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 32.dp)
@@ -150,7 +151,6 @@ fun UserInputText(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun UserInput(
-    onMessageSent: (String) -> Unit,
     modifier: Modifier = Modifier,
     resetScroll: () -> Unit = {},
 ) {
@@ -222,5 +222,5 @@ fun FunctionalityNotAvailablePanel() {
 @Preview
 @Composable
 fun UserInputPreview() {
-    UserInput(onMessageSent = {})
+    UserInput()
 }

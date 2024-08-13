@@ -2,6 +2,7 @@ package com.renan.portifolio.to_dolist.ui.login.uicomponent
 
 import UserInputText
 import android.content.res.Configuration
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -23,7 +24,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -39,11 +43,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -61,29 +67,38 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.UiMode
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.airbnb.lottie.LottieComposition
+import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.renan.portifolio.to_dolist.R
@@ -122,6 +137,16 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
         }
     }
 
+    val targetPagerBottomHeight by remember {
+        derivedStateOf {
+            if (expandedLayout) {
+                50.dp // 70% of screen height
+            } else {
+                0.dp// Full screen height
+            }
+        }
+    }
+
     var currentInputSelectorEmail by rememberSaveable { mutableStateOf(InputSelector.NONE) }
     var currentInputSelector by rememberSaveable { mutableStateOf(InputSelector.NONE) }
     val dismissKeyboardEmail = { currentInputSelectorEmail = InputSelector.NONE }
@@ -151,6 +176,7 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing), label = ""
     )
     val compositionLogo by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.android_logo))
+    val backgroundColor = MaterialTheme.colorScheme.background
 
     val images = listOf(
         R.drawable.img_quarto,
@@ -186,7 +212,6 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-
         Column {
             Box {
                 HorizontalPager(
@@ -212,7 +237,9 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                     Image(
                         painter = painterResource(id = imageResId),
                         contentDescription = "Image ${page % images.size + 1}",
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize()
+                            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
+                            .background(Color.Blue, shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)),
                         contentScale = ContentScale.Crop
                     )
                 }
@@ -229,69 +256,87 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                         enter = expandVertically() + fadeIn(),
                         exit = shrinkVertically() + fadeOut()
                     ){
-                        Text(text = "Arraste para voltar", color = Color.White,
-                            modifier = Modifier.offset(y = offsetY.value.dp)
-                        )
-                        Spacer(modifier = Modifier.height(32
-                            .dp))
+                        Text(text = "Arraste para voltar", color = Color.White)
+
+                        Spacer(modifier = Modifier.height(32.dp))
                     }
                 }
             }
-            AnimatedVisibility(
-                visible = expandedLayout,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut(),
+            Column(
                 modifier = Modifier
-                    .background(Color.White)
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .background(backgroundColor)
+
             ) {
-                Column(
+                AnimatedVisibility(
+                    visible = expandedLayout,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut(),
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                        .fillMaxSize()
                 ) {
-                    UserInputText(
-                        textFieldValue = textStateEmail,
-                        onTextChanged = { textStateEmail = it },
-                        keyboardType = KeyboardType.Email,
-                        keyboardShown = currentInputSelectorEmail == InputSelector.NONE && textFieldFocusStateEmail,
-                        onTextFieldFocused = { focused ->
-                            if (focused) {
-                                currentInputSelectorEmail = InputSelector.NONE
-                            }
-                            textFieldFocusStateEmail = focused
-                        },
-                        focusState = textFieldFocusStateEmail,
-                        hintText = "E-mail"
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    UserInputText(
-                        textFieldValue = textState,
-                        onTextChanged = { textState = it },
-                        keyboardType = KeyboardType.Password,
-                        keyboardShown = currentInputSelector == InputSelector.NONE && textFieldFocusState,
-                        onTextFieldFocused = { focused ->
-                            if (focused) {
-                                currentInputSelector = InputSelector.NONE
-                            }
-                            textFieldFocusState = focused
-                        },
-                        focusState = textFieldFocusState,
-                        hintText = "Senha"
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Esqueci a senha", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = nunitoFontFamily, fontWeight = FontWeight.Light)
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedButton(
-                        modifier = Modifier.fillMaxWidth().padding(start = 15.dp, end = 15.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        onClick = {  }
-                    ) {
-                        Text("Iniciar Sessão",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Bold, color = Color(0xFF48280E)
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ){
+                        UserInputText(
+                            textFieldValue = textStateEmail,
+                            onTextChanged = { textStateEmail = it },
+                            keyboardType = KeyboardType.Email,
+                            keyboardShown = currentInputSelectorEmail == InputSelector.NONE && textFieldFocusStateEmail,
+                            onTextFieldFocused = { focused ->
+                                if (focused) {
+                                    currentInputSelectorEmail = InputSelector.NONE
+                                }
+                                textFieldFocusStateEmail = focused
+                            },
+                            focusState = textFieldFocusStateEmail,
+                            hintText = "E-mail"
                         )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                        UserInputText(
+                            textFieldValue = textState,
+                            onTextChanged = { textState = it },
+                            keyboardType = KeyboardType.Password,
+                            keyboardShown = currentInputSelector == InputSelector.NONE && textFieldFocusState,
+                            onTextFieldFocused = { focused ->
+                                if (focused) {
+                                    currentInputSelector = InputSelector.NONE
+                                }
+                                textFieldFocusState = focused
+                            },
+                            focusState = textFieldFocusState,
+                            visualTransformation = PasswordVisualTransformation(),
+                            hintText = "Senha"
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Esqueci a senha", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = nunitoFontFamily, fontWeight = FontWeight.Light)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        OutlinedButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 15.dp, end = 15.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            onClick = {  }
+                        ) {
+                            Text("Iniciar Sessão",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Bold, color = Color(0xFF48280E)
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Text("Developer Renan Castro", fontSize = 10.sp, color = Color.LightGray)
+
+                        }
+
+                        LottieAnimation(composition = compositionLogo,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .fillMaxWidth(),
+                            iterations = LottieConstants.IterateForever)
                     }
                 }
             }
@@ -315,12 +360,6 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                     contentScale = ContentScale.Fit
 
                 )
-
-//                LottieAnimation(composition = compositionLogo,
-//                    modifier = Modifier
-//                        .size(screenWidth * 0.9f)
-//                        .padding(top = boxMaxHeight * 0.1f),
-//                    iterations = LottieConstants.IterateForever)
 
                 Column(
                     horizontalAlignment = Alignment.Start,
@@ -393,12 +432,105 @@ fun PreviewInputsLoginScreen() {
     AnimatedLoginScreen()
 }
 
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO, showSystemUi = true)
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, showSystemUi = true)
+@Preview(showBackground = true)
+@Composable
+fun PreviewBootomSheetPagerLogin() {
+    val compositionLogo by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.android_logo))
+
+    compositionLogo?.let {
+        BootomSheetPagerLogin(
+        onTextFieldFocusedEmail = {},
+        onTextFieldFocusedPassword = {},
+        textFieldValueEmail = TextFieldValue(),
+        onTextChangedEmail = {},
+        textFieldValuePassword = TextFieldValue(),
+        onTextChangedPassword = {},
+        keyboardShown = false,
+        focusStateEmail = false,
+        focusStatePassword = false,
+        compositionLogo = it
+    )
+    }
+}
+
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewBreathingAnimationOnButtonClick() {
     AnimatedLoginScreen(true)
+}
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun BootomSheetPagerLogin(
+    onTextFieldFocusedEmail: (Boolean) -> Unit,
+    onTextFieldFocusedPassword: (Boolean) -> Unit,
+    textFieldValueEmail: TextFieldValue,
+    onTextChangedEmail: (TextFieldValue) -> Unit,
+    textFieldValuePassword: TextFieldValue,
+    onTextChangedPassword: (TextFieldValue) -> Unit,
+    keyboardShown: Boolean,
+    focusStateEmail: Boolean,
+    focusStatePassword: Boolean,
+    compositionLogo: LottieComposition
+    ){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .offset(y = -(50).dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ){
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)){
+            UserInputText(
+                textFieldValue = textFieldValueEmail,
+                onTextChanged = onTextChangedEmail,
+                keyboardType = KeyboardType.Email,
+                keyboardShown = keyboardShown,
+                onTextFieldFocused = onTextFieldFocusedEmail,
+                focusState = focusStateEmail,
+                hintText = "E-mail"
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+            UserInputText(
+                textFieldValue = textFieldValuePassword,
+                onTextChanged = onTextChangedPassword,
+                keyboardType = KeyboardType.Password,
+                keyboardShown = keyboardShown,
+                onTextFieldFocused = onTextFieldFocusedPassword,
+                focusState = focusStatePassword,
+                hintText = "Senha"
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Esqueci a senha", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = nunitoFontFamily, fontWeight = FontWeight.Light)
+            Spacer(modifier = Modifier.height(12.dp))
+            OutlinedButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 15.dp, end = 15.dp),
+                shape = RoundedCornerShape(16.dp),
+                onClick = {  }
+            ) {
+                Text("Iniciar Sessão",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Bold, color = Color(0xFF48280E)
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text("Developer Renan Castro", fontSize = 10.sp, color = Color.LightGray)
+
+            }
+
+            LottieAnimation(composition = compositionLogo,
+                modifier = Modifier
+                    .size(100.dp)
+                    .fillMaxWidth(),
+                iterations = LottieConstants.IterateForever)
+        }
+
+    }
 }
 
 fun CoroutineScope.animateVerticalMovementInfinite(
@@ -418,4 +550,29 @@ fun CoroutineScope.animateVerticalMovementInfinite(
             )
         }
     }
+}
+
+@Composable
+fun VerticalDragGestureExample() {
+    var offsetY by remember { mutableStateOf(0f) }  // Armazena a posição Y atual
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.LightGray)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = { Log.d("mlogs", "LoginScreen:  onPress") },
+                    onLongPress = { Log.d("mlogs", "LoginScreen: onLongPress") })
+
+            }
+            .size(100.dp)
+            .background(Color.Blue)
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun VerticalDragGestureExamplePreview() {
+    VerticalDragGestureExample()
 }
