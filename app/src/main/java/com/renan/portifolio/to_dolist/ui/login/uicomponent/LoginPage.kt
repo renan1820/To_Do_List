@@ -137,16 +137,6 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
         }
     }
 
-    val targetPagerBottomHeight by remember {
-        derivedStateOf {
-            if (expandedLayout) {
-                50.dp // 70% of screen height
-            } else {
-                0.dp// Full screen height
-            }
-        }
-    }
-
     var currentInputSelectorEmail by rememberSaveable { mutableStateOf(InputSelector.NONE) }
     var currentInputSelector by rememberSaveable { mutableStateOf(InputSelector.NONE) }
     val dismissKeyboardEmail = { currentInputSelectorEmail = InputSelector.NONE }
@@ -176,7 +166,7 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing), label = ""
     )
     val compositionLogo by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.android_logo))
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val colorScheme = MaterialTheme.colorScheme
 
     val images = listOf(
         R.drawable.img_quarto,
@@ -256,8 +246,7 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                         enter = expandVertically() + fadeIn(),
                         exit = shrinkVertically() + fadeOut()
                     ){
-                        Text(text = "Arraste para voltar", color = Color.White)
-
+                        Text(text = "Voltar", color = Color.White)
                         Spacer(modifier = Modifier.height(32.dp))
                     }
                 }
@@ -265,7 +254,7 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(backgroundColor)
+                    .background(colorScheme.background)
 
             ) {
                 AnimatedVisibility(
@@ -320,7 +309,7 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                             shape = RoundedCornerShape(16.dp),
                             onClick = {  }
                         ) {
-                            Text("Iniciar Sessão",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Bold, color = Color(0xFF48280E)
+                            Text("Iniciar Sessão",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Bold, color = colorScheme.primary
                             )
                         }
 
@@ -369,7 +358,7 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                 ) {
                     Text("Bem vindo", fontSize = 32.sp, fontFamily = nunitoFontFamily, fontWeight = FontWeight.ExtraBold, color = Color.White)
                     Spacer(modifier = Modifier.height(screenHeight * 0.01f)) // Responsive spacer
-                    Text("Descubra mais",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Light, fontSize = 16.sp, color = Color.White)
+                    Text("Descubra mais",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Thin, fontSize = 16.sp, color = Color.White)
                 }
             }
 
@@ -432,33 +421,28 @@ fun PreviewInputsLoginScreen() {
     AnimatedLoginScreen()
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewBootomSheetPagerLogin() {
-    val compositionLogo by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.android_logo))
-
-    compositionLogo?.let {
-        BootomSheetPagerLogin(
-        onTextFieldFocusedEmail = {},
-        onTextFieldFocusedPassword = {},
-        textFieldValueEmail = TextFieldValue(),
-        onTextChangedEmail = {},
-        textFieldValuePassword = TextFieldValue(),
-        onTextChangedPassword = {},
-        keyboardShown = false,
-        focusStateEmail = false,
-        focusStatePassword = false,
-        compositionLogo = it
-    )
-    }
-}
 
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun PreviewBreathingAnimationOnButtonClick() {
     AnimatedLoginScreen(true)
 }
+
+//@Preview
+//@Composable
+//fun PreviewBootomSheetPagerLogin(){
+//    BootomSheetPagerLogin(
+//        onTextFieldFocusedEmail = ,
+//        onTextFieldFocusedPassword = ,
+//        textFieldValueEmail = ,
+//        textFieldValuePassword = ,
+//        onTextChangedPassword = ,
+//        keyboardShown = ,
+//        focusStateEmail = ,
+//        focusStatePassword = ,
+//        compositionLogo =
+//    )
+//}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -474,62 +458,54 @@ fun BootomSheetPagerLogin(
     focusStatePassword: Boolean,
     compositionLogo: LottieComposition
     ){
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .offset(y = -(50).dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ){
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)){
-            UserInputText(
-                textFieldValue = textFieldValueEmail,
-                onTextChanged = onTextChangedEmail,
-                keyboardType = KeyboardType.Email,
-                keyboardShown = keyboardShown,
-                onTextFieldFocused = onTextFieldFocusedEmail,
-                focusState = focusStateEmail,
-                hintText = "E-mail"
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)){
+        UserInputText(
+            textFieldValue = textFieldValueEmail,
+            onTextChanged = onTextChangedEmail,
+            keyboardType = KeyboardType.Email,
+            keyboardShown = keyboardShown,
+            onTextFieldFocused = onTextFieldFocusedEmail,
+            focusState = focusStateEmail,
+            hintText = "E-mail"
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+        UserInputText(
+            textFieldValue = textFieldValuePassword,
+            onTextChanged = onTextChangedPassword,
+            keyboardType = KeyboardType.Password,
+            keyboardShown = keyboardShown,
+            onTextFieldFocused = onTextFieldFocusedPassword,
+            focusState = focusStatePassword,
+            hintText = "Senha"
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Esqueci a senha", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = nunitoFontFamily, fontWeight = FontWeight.Light)
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 15.dp, end = 15.dp),
+            shape = RoundedCornerShape(16.dp),
+            onClick = {  }
+        ) {
+            Text("Iniciar Sessão",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Bold, color = Color(0xFF48280E)
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-            UserInputText(
-                textFieldValue = textFieldValuePassword,
-                onTextChanged = onTextChangedPassword,
-                keyboardType = KeyboardType.Password,
-                keyboardShown = keyboardShown,
-                onTextFieldFocused = onTextFieldFocusedPassword,
-                focusState = focusStatePassword,
-                hintText = "Senha"
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Esqueci a senha", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = nunitoFontFamily, fontWeight = FontWeight.Light)
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 15.dp, end = 15.dp),
-                shape = RoundedCornerShape(16.dp),
-                onClick = {  }
-            ) {
-                Text("Iniciar Sessão",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Bold, color = Color(0xFF48280E)
-                )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text("Developer Renan Castro", fontSize = 10.sp, color = Color.LightGray)
-
-            }
-
-            LottieAnimation(composition = compositionLogo,
-                modifier = Modifier
-                    .size(100.dp)
-                    .fillMaxWidth(),
-                iterations = LottieConstants.IterateForever)
         }
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text("Developer Renan Castro", fontSize = 10.sp, color = Color.LightGray)
+
+        }
+
+        LottieAnimation(composition = compositionLogo,
+            modifier = Modifier
+                .size(100.dp)
+                .fillMaxWidth(),
+            iterations = LottieConstants.IterateForever)
     }
 }
 
@@ -550,29 +526,4 @@ fun CoroutineScope.animateVerticalMovementInfinite(
             )
         }
     }
-}
-
-@Composable
-fun VerticalDragGestureExample() {
-    var offsetY by remember { mutableStateOf(0f) }  // Armazena a posição Y atual
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.LightGray)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = { Log.d("mlogs", "LoginScreen:  onPress") },
-                    onLongPress = { Log.d("mlogs", "LoginScreen: onLongPress") })
-
-            }
-            .size(100.dp)
-            .background(Color.Blue)
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun VerticalDragGestureExamplePreview() {
-    VerticalDragGestureExample()
 }
