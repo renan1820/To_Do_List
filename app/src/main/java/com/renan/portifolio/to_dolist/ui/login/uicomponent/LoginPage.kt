@@ -1,6 +1,7 @@
 package com.renan.portifolio.to_dolist.ui.login.uicomponent
 
 import UserInputText
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -26,6 +27,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +47,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
@@ -67,6 +70,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -104,6 +108,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.renan.portifolio.to_dolist.R
 import com.renan.portifolio.to_dolist.ui.theme.nunitoFontFamily
 import com.renan.portifolio.to_dolist.util.CustomButtonAnimate
+import kotlin.math.abs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -125,7 +130,6 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val offsetY = remember { Animatable(0f) }
     var isAnimatingLogo by remember { mutableStateOf(false) }
-    var animationJob by remember { mutableStateOf<Job?>(null) }
 
     val targetPagerHeight by remember {
         derivedStateOf {
@@ -138,27 +142,27 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
     }
 
     var currentInputSelectorEmail by rememberSaveable { mutableStateOf(InputSelector.NONE) }
-    var currentInputSelector by rememberSaveable { mutableStateOf(InputSelector.NONE) }
+    var currentInputSelectorPassword by rememberSaveable { mutableStateOf(InputSelector.NONE) }
     val dismissKeyboardEmail = { currentInputSelectorEmail = InputSelector.NONE }
-    val dismissKeyboard = { currentInputSelector = InputSelector.NONE }
+    val dismissKeyboardPassword = { currentInputSelectorPassword = InputSelector.NONE }
 
 
     if (currentInputSelectorEmail != InputSelector.NONE) {
         BackHandler(onBack = dismissKeyboardEmail)
     }
-    if (currentInputSelector != InputSelector.NONE) {
-        BackHandler(onBack = dismissKeyboard)
+    if (currentInputSelectorPassword != InputSelector.NONE) {
+        BackHandler(onBack = dismissKeyboardPassword)
     }
 
     var textStateEmail by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue())
     }
-    var textState by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+    var textStatePassword by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue())
     }
 
     var textFieldFocusStateEmail by remember { mutableStateOf(false) }
-    var textFieldFocusState by remember { mutableStateOf(false) }
+    var textFieldFocusStatePassword by remember { mutableStateOf(false) }
 
 
     val pagerHeight by animateDpAsState(
@@ -173,6 +177,10 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
         R.drawable.img_cozinha,
         R.drawable.img_escritorio
     )
+
+    var startPosition by remember { mutableStateOf(Offset.Zero) }
+    var endPosition by remember { mutableStateOf(Offset.Zero) }
+
 
     LaunchedEffect(animateSize) {
         transitionState.targetState = animateSize
@@ -208,38 +216,64 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                     state = pagerState,
                     modifier = Modifier
                         .height(pagerHeight)
-                        .clickable {
-                            expandedLayout = !expandedLayout
-                            isLooping = !isLooping
-
-                            if (!isAnimatingLogo) {
-                                isAnimatingLogo = true
-                                animationJob = coroutineScope.animateVerticalMovementInfinite(
-                                    offsetY = offsetY
-                                )
-                            } else {
-                                animationJob?.cancel() // Cancel the animation
-                                isAnimatingLogo = false
-                            }
-                        }
                 ) { page ->
                     val imageResId = images[page % images.size]
                     Image(
                         painter = painterResource(id = imageResId),
                         contentDescription = "Image ${page % images.size + 1}",
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
                             .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-                            .background(Color.Blue, shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)),
+                            .background(
+                                Color.Blue,
+                                shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                            ),
                         contentScale = ContentScale.Crop
                     )
                 }
-
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom,
                     modifier = Modifier
                         .height(targetPagerHeight)
                         .fillMaxWidth()
+                        .pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragStart = { offset ->
+                                    startPosition = offset
+                                },
+                                onDrag = { change, dragAmount -> endPosition = change.position },
+                                onDragEnd = {
+
+                                    val verifyDragDirectionX = startPosition.x - endPosition.x
+                                    val verifyDragDirectionY = startPosition.y - endPosition.y
+
+                                    val movingInHorizontalPosition = abs(verifyDragDirectionX) >= abs(verifyDragDirectionY)
+                                    if(movingInHorizontalPosition){
+                                        if(expandedLayout){
+                                            val nextPage: Int = if(verifyDragDirectionX > 0){
+                                                (pagerState.currentPage + 1) % pagerState.pageCount
+                                            }else{
+                                                (pagerState.currentPage - 1) % pagerState.pageCount
+                                            }
+                                            coroutineScope.launch {
+                                                pagerState.animateScrollToPage(nextPage)
+                                            }
+                                        }
+                                    }else{
+                                        expandedLayout = !expandedLayout
+                                        isLooping = !isLooping
+
+                                        if (!isAnimatingLogo) {
+                                            isAnimatingLogo = true
+                                            coroutineScope.animateVerticalMovementInfinite(
+                                                offsetY = offsetY
+                                            )
+                                        }                                    }
+
+                                }
+                            )
+                        }
                 ){
                     AnimatedVisibility(
                         visible = expandedLayout,
@@ -264,153 +298,53 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ){
-                        UserInputText(
-                            textFieldValue = textStateEmail,
-                            onTextChanged = { textStateEmail = it },
-                            keyboardType = KeyboardType.Email,
-                            keyboardShown = currentInputSelectorEmail == InputSelector.NONE && textFieldFocusStateEmail,
-                            onTextFieldFocused = { focused ->
+                    BootomSheetPagerLogin(
+                        onTextFieldFocusedEmail = { focused ->
                                 if (focused) {
                                     currentInputSelectorEmail = InputSelector.NONE
                                 }
-                                textFieldFocusStateEmail = focused
-                            },
-                            focusState = textFieldFocusStateEmail,
-                            hintText = "E-mail"
-                        )
+                            textFieldFocusStateEmail = focused
 
-                        Spacer(modifier = Modifier.height(8.dp))
-                        UserInputText(
-                            textFieldValue = textState,
-                            onTextChanged = { textState = it },
-                            keyboardType = KeyboardType.Password,
-                            keyboardShown = currentInputSelector == InputSelector.NONE && textFieldFocusState,
-                            onTextFieldFocused = { focused ->
+                        },
+                        onTextFieldFocusedPassword = { focused ->
                                 if (focused) {
-                                    currentInputSelector = InputSelector.NONE
+                                    currentInputSelectorPassword = InputSelector.NONE
                                 }
-                                textFieldFocusState = focused
+                            textFieldFocusStatePassword = focused
                             },
-                            focusState = textFieldFocusState,
-                            visualTransformation = PasswordVisualTransformation(),
-                            hintText = "Senha"
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Esqueci a senha", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = nunitoFontFamily, fontWeight = FontWeight.Light)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 15.dp, end = 15.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            onClick = {  }
-                        ) {
-                            Text("Iniciar Sessão",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Bold, color = colorScheme.primary
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Text("Developer Renan Castro", fontSize = 10.sp, color = Color.LightGray)
-
-                        }
-
-                        LottieAnimation(composition = compositionLogo,
-                            modifier = Modifier
-                                .size(100.dp)
-                                .fillMaxWidth(),
-                            iterations = LottieConstants.IterateForever)
-                    }
+                        textFieldValueEmail = textStateEmail,
+                        onTextChangedEmail = { textStateEmail = it },
+                        textFieldValuePassword = textStatePassword,
+                        onTextChangedPassword = { textStatePassword = it },
+                        keyboardShownEmail = currentInputSelectorEmail == InputSelector.NONE && textFieldFocusStateEmail,
+                        keyboardShownPassword = currentInputSelectorPassword == InputSelector.NONE && textFieldFocusStatePassword,
+                        focusStateEmail = textFieldFocusStateEmail,
+                        focusStatePassword = textFieldFocusStatePassword,
+                        compositionLogo = compositionLogo
+                    )
                 }
             }
 
         }
 
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val screenWidth = maxWidth
-            val boxMaxHeight = maxHeight
+            ScreenElementsLoginFullPager(
+                screenHeight = screenHeight,
+                boxMaxHeight = maxHeight,
+                expandedLayout = expandedLayout,
+                onClickStart ={
+                    expandedLayout = !expandedLayout
+                    isLooping = !isLooping
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.sua_logo),
-                    contentDescription = "Image B",
-                    modifier = Modifier
-                        .size(boxMaxHeight * 0.3f)
-                        .padding(boxMaxHeight * 0.05f),
-                    contentScale = ContentScale.Fit
-
-                )
-
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = boxMaxHeight * 0.1f, start = 30.dp)
-                ) {
-                    Text("Bem vindo", fontSize = 32.sp, fontFamily = nunitoFontFamily, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                    Spacer(modifier = Modifier.height(screenHeight * 0.01f)) // Responsive spacer
-                    Text("Descubra mais",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Thin, fontSize = 16.sp, color = Color.White)
-                }
-            }
-
-
-            AnimatedVisibility(
-                visible = !expandedLayout,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ){
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Bottom,
-                    modifier = Modifier.fillMaxSize()
-                ){
-                    Row (
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(30.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-
-                        CustomButtonAnimate(
-                            text = "Iníciar",
-                            colorText = Color.White,
-                            height = 48.dp,
-                            weight = 156.dp,
-                            colorStroke = Color.White,
-                            onClick = {
-                                expandedLayout = !expandedLayout
-                                isLooping = !isLooping
-
-                                if (!isAnimatingLogo) {
-                                    isAnimatingLogo = true
-                                    coroutineScope.animateVerticalMovementInfinite(
-                                        offsetY = offsetY
-                                    )
-                                }
-                        })
-
-                        CustomButtonAnimate(
-                            text = "Registrar",
-                            colorText = Color.White,
-                            height = 48.dp,
-                            weight = 156.dp,
-                            colorStroke = Color.White,
-                            animatedStroke = false,
-                            onClick = {
-
-                            })
+                    if (!isAnimatingLogo) {
+                        isAnimatingLogo = true
+                        coroutineScope.animateVerticalMovementInfinite(
+                            offsetY = offsetY
+                        )
                     }
-                }
-            }
+                },
+                onClickRegister ={},
+            )
         }
     }
 }
@@ -428,21 +362,77 @@ fun PreviewBreathingAnimationOnButtonClick() {
     AnimatedLoginScreen(true)
 }
 
-//@Preview
-//@Composable
-//fun PreviewBootomSheetPagerLogin(){
-//    BootomSheetPagerLogin(
-//        onTextFieldFocusedEmail = ,
-//        onTextFieldFocusedPassword = ,
-//        textFieldValueEmail = ,
-//        textFieldValuePassword = ,
-//        onTextChangedPassword = ,
-//        keyboardShown = ,
-//        focusStateEmail = ,
-//        focusStatePassword = ,
-//        compositionLogo =
-//    )
-//}
+@Composable
+fun ScreenElementsLoginFullPager(
+    screenHeight: Dp,
+    boxMaxHeight: Dp,
+    expandedLayout: Boolean = true,
+    onClickStart: () -> Unit,
+    onClickRegister: () -> Unit,
+){
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.sua_logo),
+            contentDescription = "Image B",
+            modifier = Modifier
+                .size(boxMaxHeight * 0.3f)
+                .padding(boxMaxHeight * 0.05f),
+            contentScale = ContentScale.Fit
+
+        )
+
+        Column(
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = boxMaxHeight * 0.1f, start = 30.dp, end = 30.dp)
+        ) {
+            Text("Bem vindo", fontSize = 32.sp, fontFamily = nunitoFontFamily, fontWeight = FontWeight.ExtraBold, color = Color.White)
+            Spacer(modifier = Modifier.height(screenHeight * 0.01f)) // Responsive spacer
+            Text("Descubra mais",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Thin, fontSize = 16.sp, color = Color.White)
+        }
+    }
+    AnimatedVisibility(
+        visible = !expandedLayout,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ){
+        Column(
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Bottom,
+            modifier = Modifier.fillMaxSize()
+        ){
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(30.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+
+                CustomButtonAnimate(
+                    text = "Iníciar",
+                    colorText = Color.White,
+                    height = 48.dp,
+                    weight = 156.dp,
+                    colorStroke = Color.White,
+                    onClick = onClickStart)
+
+                CustomButtonAnimate(
+                    text = "Registrar",
+                    colorText = Color.White,
+                    height = 48.dp,
+                    weight = 156.dp,
+                    colorStroke = Color.White,
+                    animatedStroke = false,
+                    onClick = onClickRegister)
+            }
+        }
+    }
+
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -453,17 +443,24 @@ fun BootomSheetPagerLogin(
     onTextChangedEmail: (TextFieldValue) -> Unit,
     textFieldValuePassword: TextFieldValue,
     onTextChangedPassword: (TextFieldValue) -> Unit,
-    keyboardShown: Boolean,
+    keyboardShownEmail: Boolean,
+    keyboardShownPassword: Boolean,
     focusStateEmail: Boolean,
     focusStatePassword: Boolean,
-    compositionLogo: LottieComposition
+    compositionLogo: LottieComposition?
     ){
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)){
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
         UserInputText(
             textFieldValue = textFieldValueEmail,
             onTextChanged = onTextChangedEmail,
             keyboardType = KeyboardType.Email,
-            keyboardShown = keyboardShown,
+            keyboardShown = keyboardShownEmail,
             onTextFieldFocused = onTextFieldFocusedEmail,
             focusState = focusStateEmail,
             hintText = "E-mail"
@@ -474,9 +471,10 @@ fun BootomSheetPagerLogin(
             textFieldValue = textFieldValuePassword,
             onTextChanged = onTextChangedPassword,
             keyboardType = KeyboardType.Password,
-            keyboardShown = keyboardShown,
+            keyboardShown = keyboardShownPassword,
             onTextFieldFocused = onTextFieldFocusedPassword,
             focusState = focusStatePassword,
+            visualTransformation = PasswordVisualTransformation(),
             hintText = "Senha"
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -523,6 +521,66 @@ fun CoroutineScope.animateVerticalMovementInfinite(
             offsetY.animateTo(
                 targetValue = -distance,
                 animationSpec = tween(durationMillis = durationMillis)
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewPagerState(){
+    HorizontalPagerWithDragText()
+}
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HorizontalPagerWithDragText() {
+    var showText by remember { mutableStateOf(false) }
+    val pagerState = rememberPagerState(pageCount = { 5 })
+    var startPosition by remember { mutableStateOf(Offset.Zero) }
+    var endPosition by remember { mutableStateOf(Offset.Zero) }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Gray)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = { offset ->
+                        // Armazena o ponto de início do gesto
+                        startPosition = offset
+                    },
+                    onDrag = { change, dragAmount -> endPosition = change.position },
+                    onDragEnd = {
+                        // Calcula a diferença vertical
+                        val dragDistanceY = startPosition.y - endPosition.y
+
+                        showText = dragDistanceY > 0
+                    }
+                )
+            }
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize()
+        ) { page ->
+            // Conteúdo do HorizontalPager
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF0000FF + page * 10000))
+            )
+        }
+
+        if (showText) {
+            Text(
+                text = "Texto exibido após arrasto!",
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .background(Color.White)
+                    .padding(16.dp),
+                color = Color.Black,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
             )
         }
     }
