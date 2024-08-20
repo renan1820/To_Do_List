@@ -1,4 +1,4 @@
-package com.renan.portifolio.to_dolist.util
+package com.renan.portifolio.to_dolist.util.composable
 
 import android.view.ViewTreeObserver
 import androidx.compose.runtime.Composable

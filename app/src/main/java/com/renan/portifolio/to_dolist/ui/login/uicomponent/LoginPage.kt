@@ -1,35 +1,22 @@
 package com.renan.portifolio.to_dolist.ui.login.uicomponent
 
-import UserInputText
-import android.annotation.SuppressLint
-import android.content.res.Configuration
+import com.renan.portifolio.to_dolist.util.composable.UserInputText
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -39,26 +26,18 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BottomSheetDefaults
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,45 +48,35 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.UiMode
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.airbnb.lottie.LottieComposition
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.renan.portifolio.to_dolist.R
+import com.renan.portifolio.to_dolist.model.User
+import com.renan.portifolio.to_dolist.ui.login.state.LoginState
+import com.renan.portifolio.to_dolist.ui.login.viewmodel.LoginViewModel
 import com.renan.portifolio.to_dolist.ui.theme.nunitoFontFamily
-import com.renan.portifolio.to_dolist.util.CustomButtonAnimate
+import com.renan.portifolio.to_dolist.util.composable.CustomButtonAnimate
+import com.renan.portifolio.to_dolist.util.composable.InputSelector
+import com.renan.portifolio.to_dolist.util.composable.RetryContent
 import kotlin.math.abs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -115,13 +84,35 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
+import org.koin.androidx.compose.koinViewModel
 
-//navController:NavController? , loginViewModel: LoginViewModel = koinViewModel()
+@Composable
+fun LoadingIndicator(state: LoginState, onRetry: () -> Unit){
+    AnimatedVisibility(
+        visible = state.isLoading,
+        enter = expandVertically() + fadeIn(),
+        exit = shrinkVertically() + fadeOut()
+    ){
+        Box(modifier = Modifier.fillMaxSize().background(Color.Red), contentAlignment = Alignment.Center){
+            if (state.isLoading){
+                CircularProgressIndicator()
+            }
+            if (state.error != null){
+                RetryContent(
+                    error= state.error,
+                    onRetry= onRetry
+                )
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AnimatedLoginScreen(expanded: Boolean = false) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
+fun AnimatedLoginScreen(expanded: Boolean = false, navController: NavController?, loginViewModel: LoginViewModel = koinViewModel()) {
+    val state: LoginState = loginViewModel.state
+
+    val pagerState = rememberPagerState(pageCount = { 4 })
     var expandedLayout by remember { mutableStateOf(expanded) }
     var isLooping by remember { mutableStateOf(true) }
     var animateSize by remember { mutableStateOf(false) }
@@ -163,24 +154,24 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
 
     var textFieldFocusStateEmail by remember { mutableStateOf(false) }
     var textFieldFocusStatePassword by remember { mutableStateOf(false) }
-
-
+    
     val pagerHeight by animateDpAsState(
         targetValue = targetPagerHeight, // Adjust sizes as needed
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing), label = ""
     )
+
     val compositionLogo by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.android_logo))
     val colorScheme = MaterialTheme.colorScheme
 
     val images = listOf(
         R.drawable.img_quarto,
         R.drawable.img_cozinha,
-        R.drawable.img_escritorio
+        R.drawable.img_escritorio,
+        R.drawable.travel_1
     )
 
     var startPosition by remember { mutableStateOf(Offset.Zero) }
     var endPosition by remember { mutableStateOf(Offset.Zero) }
-
 
     LaunchedEffect(animateSize) {
         transitionState.targetState = animateSize
@@ -208,6 +199,7 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
             }
         }
     }
+
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         Column {
@@ -248,19 +240,20 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                                     val verifyDragDirectionX = startPosition.x - endPosition.x
                                     val verifyDragDirectionY = startPosition.y - endPosition.y
 
-                                    val movingInHorizontalPosition = abs(verifyDragDirectionX) >= abs(verifyDragDirectionY)
-                                    if(movingInHorizontalPosition){
-                                        if(expandedLayout){
-                                            val nextPage: Int = if(verifyDragDirectionX > 0){
+                                    val movingInHorizontalPosition =
+                                        abs(verifyDragDirectionX) >= abs(verifyDragDirectionY)
+                                    if (movingInHorizontalPosition) {
+                                        if (expandedLayout) {
+                                            val nextPage: Int = if (verifyDragDirectionX > 0) {
                                                 (pagerState.currentPage + 1) % pagerState.pageCount
-                                            }else{
+                                            } else {
                                                 (pagerState.currentPage - 1) % pagerState.pageCount
                                             }
                                             coroutineScope.launch {
                                                 pagerState.animateScrollToPage(nextPage)
                                             }
                                         }
-                                    }else{
+                                    } else {
                                         expandedLayout = !expandedLayout
                                         isLooping = !isLooping
 
@@ -269,8 +262,8 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                                             coroutineScope.animateVerticalMovementInfinite(
                                                 offsetY = offsetY
                                             )
-                                        }                                    }
-
+                                        }
+                                    }
                                 }
                             )
                         }
@@ -320,17 +313,28 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                         keyboardShownPassword = currentInputSelectorPassword == InputSelector.NONE && textFieldFocusStatePassword,
                         focusStateEmail = textFieldFocusStateEmail,
                         focusStatePassword = textFieldFocusStatePassword,
-                        compositionLogo = compositionLogo
+                        compositionLogo = compositionLogo,
+                        onClickStart = {
+                            Log.i("aux", "textStateEmail: ${textStateEmail.text} : textStatePassword: ${textStatePassword.text}")
+
+
+                            loginViewModel.login(textStateEmail.text, textStatePassword.text)
+
+                            if(state.user?.password.equals("123")){
+                                Log.i("aux", "password: ${state.user?.password}")
+                            }
+                        }
                     )
                 }
             }
-
         }
+
 
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             ScreenElementsLoginFullPager(
                 screenHeight = screenHeight,
                 boxMaxHeight = maxHeight,
+                pagerHeight = pagerHeight,
                 expandedLayout = expandedLayout,
                 onClickStart ={
                     expandedLayout = !expandedLayout
@@ -344,46 +348,35 @@ fun AnimatedLoginScreen(expanded: Boolean = false) {
                     }
                 },
                 onClickRegister ={},
+                state = state,
+                onRetry = { loginViewModel.login(textStateEmail.text, textStatePassword.text)}
             )
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewInputsLoginScreen() {
-    AnimatedLoginScreen()
-}
-
-
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Composable
-fun PreviewBreathingAnimationOnButtonClick() {
-    AnimatedLoginScreen(true)
-}
-
 @Composable
 fun ScreenElementsLoginFullPager(
     screenHeight: Dp,
     boxMaxHeight: Dp,
+    pagerHeight: Dp,
     expandedLayout: Boolean = true,
     onClickStart: () -> Unit,
     onClickRegister: () -> Unit,
+    state: LoginState,
+    onRetry: () -> Unit
 ){
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize(),
     ) {
+        Spacer(modifier = Modifier.height(pagerHeight * 0.1f))
         Image(
             painter = painterResource(id = R.drawable.sua_logo),
             contentDescription = "Image B",
             modifier = Modifier
-                .size(boxMaxHeight * 0.3f)
-                .padding(boxMaxHeight * 0.05f),
+                .size(pagerHeight * 0.25f),
             contentScale = ContentScale.Fit
-
         )
-
         Column(
             horizontalAlignment = Alignment.Start,
             modifier = Modifier
@@ -432,6 +425,10 @@ fun ScreenElementsLoginFullPager(
         }
     }
 
+    LoadingIndicator(
+        state = state,
+        onRetry = onRetry
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -447,7 +444,8 @@ fun BootomSheetPagerLogin(
     keyboardShownPassword: Boolean,
     focusStateEmail: Boolean,
     focusStatePassword: Boolean,
-    compositionLogo: LottieComposition?
+    compositionLogo: LottieComposition?,
+    onClickStart: ()-> Unit
     ){
 
     Column(
@@ -485,7 +483,7 @@ fun BootomSheetPagerLogin(
                 .fillMaxWidth()
                 .padding(start = 15.dp, end = 15.dp),
             shape = RoundedCornerShape(16.dp),
-            onClick = {  }
+            onClick = onClickStart
         ) {
             Text("Iniciar Sessão",fontFamily = nunitoFontFamily, fontWeight = FontWeight.Bold, color = Color(0xFF48280E)
             )
@@ -529,59 +527,25 @@ fun CoroutineScope.animateVerticalMovementInfinite(
 @Preview
 @Composable
 fun PreviewPagerState(){
-    HorizontalPagerWithDragText()
+    AnimatedLoginScreen(
+        expanded = false,
+        navController = null,
+    )
 }
-@OptIn(ExperimentalFoundationApi::class)
+
+@Preview(showBackground = true)
 @Composable
-fun HorizontalPagerWithDragText() {
-    var showText by remember { mutableStateOf(false) }
-    val pagerState = rememberPagerState(pageCount = { 5 })
-    var startPosition by remember { mutableStateOf(Offset.Zero) }
-    var endPosition by remember { mutableStateOf(Offset.Zero) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Gray)
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        // Armazena o ponto de início do gesto
-                        startPosition = offset
-                    },
-                    onDrag = { change, dragAmount -> endPosition = change.position },
-                    onDragEnd = {
-                        // Calcula a diferença vertical
-                        val dragDistanceY = startPosition.y - endPosition.y
-
-                        showText = dragDistanceY > 0
-                    }
-                )
-            }
-    ) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize()
-        ) { page ->
-            // Conteúdo do HorizontalPager
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFF0000FF + page * 10000))
+fun PreviewLoadingIndicator(){
+    LoadingIndicator(
+        state = LoginState(
+            isLoading = true,
+            error = null,
+            user = User(
+                id = 0,
+                name = "",
+                email = "",
             )
-        }
-
-        if (showText) {
-            Text(
-                text = "Texto exibido após arrasto!",
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .background(Color.White)
-                    .padding(16.dp),
-                color = Color.Black,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
+        ),
+        onRetry = {}
+    )
 }

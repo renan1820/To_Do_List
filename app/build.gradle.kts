@@ -80,6 +80,8 @@ dependencies {
     implementation(libs.google.services)
     implementation(libs.google.accompanist)
     implementation(libs.lottie.compose)
+    implementation(libs.http3.okhttp)
+    implementation(libs.http3.logging)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

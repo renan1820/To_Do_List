@@ -8,7 +8,7 @@ import com.renan.portifolio.to_dolist.repository.FakeAuthRepository
 import com.renan.portifolio.to_dolist.ui.home.viewmodel.HomeViewModel
 import com.renan.portifolio.to_dolist.ui.login.viewmodel.LoginViewModel
 
-class MockViewModel : LoginViewModel(FakeAuthRepository()) {
+class MockViewModel : LoginViewModel() {
     override val loginResponse: LiveData<LoginResponse> = MutableLiveData(
         LoginResponse(
             token = "mock_token",

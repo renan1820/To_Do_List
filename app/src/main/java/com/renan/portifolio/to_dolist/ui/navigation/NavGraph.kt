@@ -13,8 +13,7 @@ import org.koin.androidx.compose.koinViewModel
 fun NavGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
-//            navController = navController
-            AnimatedLoginScreen()
+            AnimatedLoginScreen(navController = navController)
         }
         composable("home") {
             HomeScreen()
