@@ -25,14 +25,42 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("debug") {
+            applicationIdSuffix = ".debug"
+            isDebuggable = true
+            enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
+        }
+
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
+
+        create("mock"){
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".debugStaging"
+        }
     }
+
+    flavorDimensions.add("hardware")
+
+    productFlavors {
+        create("phone"){
+            dimension = "hardware"
+//            apply(from = "src/phone/build-phone.gradle")
+        }
+
+        create("nativeTotem") {
+            dimension = "hardware"
+//            apply(from = "src/nativeTotem/build-nativetotem.gradle")
+        }
+
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -82,8 +110,15 @@ dependencies {
     implementation(libs.lottie.compose)
     implementation(libs.http3.okhttp)
     implementation(libs.http3.logging)
+    implementation(libs.koin.test)
+    implementation(libs.koin.test.junit)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.mockito)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.junit.jupiter)
+    androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
