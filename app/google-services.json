@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "56578046578",
+    "project_id": "portifolio-renan-f7a0a",
+    "storage_bucket": "portifolio-renan-f7a0a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56578046578:android:58a7b2c555c862d0f8a0eb",
+        "android_client_info": {
+          "package_name": "com.renan.portifolio.to_dolist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOP-7L2PCxrxozaghGmHdhEjgfE0aOmRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56578046578:android:4a43b2def5ca8ff6f8a0eb",
+        "android_client_info": {
+          "package_name": "com.renan.portifolio.to_dolist.free.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOP-7L2PCxrxozaghGmHdhEjgfE0aOmRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

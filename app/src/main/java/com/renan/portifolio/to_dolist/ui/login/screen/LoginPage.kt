@@ -1,4 +1,4 @@
-package com.renan.portifolio.to_dolist.ui.login.uicomponent
+package com.renan.portifolio.to_dolist.ui.login.screen
 
 import com.renan.portifolio.to_dolist.util.composable.UserInputText
 import android.util.Log
@@ -37,7 +37,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,6 +75,7 @@ import com.renan.portifolio.to_dolist.ui.login.viewmodel.LoginViewModel
 import com.renan.portifolio.to_dolist.ui.theme.nunitoFontFamily
 import com.renan.portifolio.to_dolist.util.composable.CustomButtonAnimate
 import com.renan.portifolio.to_dolist.util.composable.InputSelector
+import com.renan.portifolio.to_dolist.util.composable.LoadingIndicator
 import com.renan.portifolio.to_dolist.util.composable.RetryContent
 import kotlin.math.abs
 import kotlinx.coroutines.CoroutineScope
@@ -85,27 +85,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 import org.koin.androidx.compose.koinViewModel
-
-@Composable
-fun LoadingIndicator(state: LoginState, onRetry: () -> Unit){
-    AnimatedVisibility(
-        visible = state.isLoading,
-        enter = expandVertically() + fadeIn(),
-        exit = shrinkVertically() + fadeOut()
-    ){
-        Box(modifier = Modifier.fillMaxSize().background(Color.Red), contentAlignment = Alignment.Center){
-            if (state.isLoading){
-                CircularProgressIndicator()
-            }
-            if (state.error != null){
-                RetryContent(
-                    error= state.error,
-                    onRetry= onRetry
-                )
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -323,6 +302,7 @@ fun AnimatedLoginScreen(expanded: Boolean = false, navController: NavController?
                             if(state.user?.password.equals("123")){
                                 Log.i("aux", "password: ${state.user?.password}")
                             }
+
                         }
                     )
                 }
@@ -426,7 +406,8 @@ fun ScreenElementsLoginFullPager(
     }
 
     LoadingIndicator(
-        state = state,
+        isLoading = state.isLoading,
+        error = state.error,
         onRetry = onRetry
     )
 }
@@ -537,15 +518,8 @@ fun PreviewPagerState(){
 @Composable
 fun PreviewLoadingIndicator(){
     LoadingIndicator(
-        state = LoginState(
-            isLoading = true,
-            error = null,
-            user = User(
-                id = 0,
-                name = "",
-                email = "",
-            )
-        ),
+        isLoading = true,
+        error= "",
         onRetry = {}
     )
 }

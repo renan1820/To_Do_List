@@ -5,9 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.renan.portifolio.to_dolist.ui.home.screen.HomeScreen
-import com.renan.portifolio.to_dolist.ui.login.screen.LoginScreen
-import com.renan.portifolio.to_dolist.ui.login.uicomponent.AnimatedLoginScreen
-import org.koin.androidx.compose.koinViewModel
+import com.renan.portifolio.to_dolist.ui.login.screen.AnimatedLoginScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {

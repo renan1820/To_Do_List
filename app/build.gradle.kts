@@ -1,7 +1,10 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.google.services)
+    id("com.google.firebase.crashlytics")
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
+
     kotlin("kapt")
 
 }
@@ -49,13 +52,17 @@ android {
     flavorDimensions.add("hardware")
 
     productFlavors {
-        create("phone"){
+        create("demo"){
             dimension = "hardware"
+            applicationIdSuffix = ".free"
+            versionNameSuffix = "-free"
 //            apply(from = "src/phone/build-phone.gradle")
         }
 
-        create("nativeTotem") {
+        create("full") {
             dimension = "hardware"
+            applicationIdSuffix = ".pro"
+            versionNameSuffix = "-pro"
 //            apply(from = "src/nativeTotem/build-nativetotem.gradle")
         }
 
@@ -90,10 +97,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(platform(libs.firebase.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.security.crypto)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.koin.android)
@@ -112,6 +121,8 @@ dependencies {
     implementation(libs.http3.logging)
     implementation(libs.koin.test)
     implementation(libs.koin.test.junit)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics.ktx)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

@@ -11,6 +11,7 @@ import com.renan.portifolio.to_dolist.model.LoginResponse
 import com.renan.portifolio.to_dolist.repository.LoginRepositoryImpl
 import com.renan.portifolio.to_dolist.ui.login.state.LoginState
 import com.renan.portifolio.to_dolist.util.Resource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -31,6 +32,7 @@ open class LoginViewModel: ViewModel(), KoinComponent {
         viewModelScope.launch {
             state = state.copy(isLoading = true)
 
+            delay(3000L)
             when(val result = loginRepository.requestLogin(email, password)){
                 is Resource.Success ->{
                     state = state.copy(
