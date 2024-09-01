@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.renan.portifolio.to_dolist" />
+                  <option name="mobileSdkAppId" value="1:56578046578:android:58a7b2c555c862d0f8a0eb" />
+                  <option name="projectId" value="portifolio-renan-f7a0a" />
+                  <option name="projectNumber" value="56578046578" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

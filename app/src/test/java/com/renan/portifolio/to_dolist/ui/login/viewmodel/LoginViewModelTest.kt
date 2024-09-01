@@ -17,3 +17,4 @@ class LoginViewModelTest: BaseUnitTest() {
     }
 
 }
+

@@ -9,18 +9,14 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 open class PreferencesDataSource(
-    val sharedPreferences: SharedPreferences,
+    private val sharedPreferences: SharedPreferences,
 ) : KoinComponent, IPreferencesDataSource {
 
     companion object {
-        const val PROJECT_PREF_FILE_NAME = "liAT0Zhw3J" + BuildConfig.FLAVOR
+        const val PROJECT_PREF_FILE_NAME = "liAT0Zhw3J" + BuildConfig.BUILD_TYPE
     }
 
-    val gson = Gson()
-    private var isEmployeeInitialized = false
-
-
-    override fun getPriveteSharedPreferences(): SharedPreferences = sharedPreferences
+    override fun getPrivateSharedPreferences(): SharedPreferences = sharedPreferences
 
     @Suppress("UNCHECKED_CAST")
     open fun <T : Any> getPref(key: String, defaultValue: T): T {

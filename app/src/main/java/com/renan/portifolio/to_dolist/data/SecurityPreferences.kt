@@ -1,17 +1,12 @@
 package com.renan.portifolio.to_dolist.data
 
 import android.content.Context
-import android.content.SharedPreferences
-import android.os.Build
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
 import com.renan.portifolio.to_dolist.BuildConfig
 import com.renan.portifolio.to_dolist.data.daos.IPreferencesDataSource
 import com.renan.portifolio.to_dolist.data.daos.PreferencesDataSource
-import java.security.KeyStore
 
 open class SecurityPreferences(
-    val preferences: IPreferencesDataSource,
+    private val preferences: IPreferencesDataSource,
     context: Context,
 ) : PreferencesDataSource(
     EncryptedSharedPreferences(context).build(PREF_SECURITY_FILE_NAME)
@@ -26,7 +21,7 @@ open class SecurityPreferences(
     }
 
     private fun setup() {
-        preferences.getPriveteSharedPreferences().all.forEach { map ->
+        preferences.getPrivateSharedPreferences().all.forEach { map ->
             map.value?.let {
                 setPref(map.key, it)
             }
@@ -34,11 +29,11 @@ open class SecurityPreferences(
         cleanPreferencesNotSecurity()
     }
 
-    private fun isPreferencesNotSecurity() = preferences.getPriveteSharedPreferences().all.isNotEmpty()
+    private fun isPreferencesNotSecurity() = preferences.getPrivateSharedPreferences().all.isNotEmpty()
 
-    private fun isPreferencesSecurity() = getPriveteSharedPreferences().all.isNotEmpty()
+    private fun isPreferencesSecurity() = getPrivateSharedPreferences().all.isNotEmpty()
 
-    private fun cleanPreferencesNotSecurity() = preferences.getPriveteSharedPreferences().edit().run {
+    private fun cleanPreferencesNotSecurity() = preferences.getPrivateSharedPreferences().edit().run {
         clear()
         commit()
     }
